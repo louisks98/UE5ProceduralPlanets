@@ -8,7 +8,7 @@ public class UE5ProceduralPlanets : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "ProceduralMeshComponent"});
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "ProceduralMeshComponent", "FastNoiseGenerator", "FastNoise"});
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 

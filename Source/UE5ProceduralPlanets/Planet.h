@@ -14,6 +14,8 @@ class UE5PROCEDURALPLANETS_API APlanet : public AActor
 	GENERATED_BODY()
 	
 public:
+	APlanet();
+	
 UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Planet mesh")
 	int Resolution;
 UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Planet mesh")
@@ -21,25 +23,25 @@ UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Planet mesh")
 UPROPERTY(BlueprintReadOnly, Category = "Planet mesh")
 	UMaterialInstanceDynamic* DynamicMaterial;
 	
-UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Planet settings")
+UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Planet settings")
 	FLinearColor Color;
-UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Planet settings")
+UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Planet settings")
 	float Radius;
-UPROPERTY()
+UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Planet settings")
 	UTerrainComponent* Terrain;
 
 UFUNCTION(BlueprintCallable)
 	void UpdateColor(FLinearColor pColor);
 UFUNCTION(BlueprintCallable)
 	void UpdateRadius(float pRadius);
+
+UFUNCTION(BlueprintCallable)
+	void UpdateContinentLayerSettings(float Strength, float Roughness);
+UFUNCTION(BlueprintCallable)
+	void UpdateMountainLayerSettings(float Strength, float Roughness);
 	
-	APlanet();
-	virtual void Tick(float DeltaTime) override;
-
-#if WITH_EDITOR
-	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
-#endif
-
+UFUNCTION(BlueprintCallable)
+	void GeneratePlanet() const;
 protected:
 	virtual void BeginPlay() override;
 	
@@ -47,6 +49,5 @@ private:
 	UPROPERTY()
 	UProceduralMeshComponent* Mesh;
 	
-	void GeneratePlanet(bool Update = false) const;
-	void GenerateMesh(int SectionIndex, const FVector& LocalUp, bool Update = false) const;
+	void GenerateMesh(int SectionIndex, const FVector& LocalUp) const;
 };

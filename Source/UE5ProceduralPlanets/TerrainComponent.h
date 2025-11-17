@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "TerrainLayer.h"
 #include "Components/ActorComponent.h"
+#include "FastNoiseWrapper.h"
 #include "TerrainComponent.generated.h"
 
 
@@ -16,16 +17,16 @@ class UE5PROCEDURALPLANETS_API UTerrainComponent : public UActorComponent
 public:	
 	UTerrainComponent();
 
-	UPROPERTY(EditAnywhere)
+UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UTerrainLayer* ContinentLayer;
-	UPROPERTY(EditAnywhere)
+UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UTerrainLayer* MountainLayer;
 	
+	FVector EvaluateTerrain(const FVector& Point, float Radius) const;
+
 protected:
 	virtual void BeginPlay() override;
-
-public:	
-	float EvaluateTerrain(FVector Point);
-
-		
+	
+private:
+	UFastNoiseWrapper* NoiseWrapper = nullptr;
 };

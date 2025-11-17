@@ -3,22 +3,35 @@
 
 #include "TerrainComponent.h"
 
-// Sets default values for this component's properties
 UTerrainComponent::UTerrainComponent()
 {
-	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
-	// off to improve performance if you don't need them.
-	PrimaryComponentTick.bCanEverTick = true;
+	NoiseWrapper = CreateDefaultSubobject<UFastNoiseWrapper>("Noise");
+	NoiseWrapper->SetupFastNoise(EFastNoise_NoiseType::Simplex, 1337, 1.0f);
 
-	// ...
+	PrimaryComponentTick.bCanEverTick = true;
+	ContinentLayer = CreateDefaultSubobject<UTerrainLayer>("ContinentLayer");
+	MountainLayer = CreateDefaultSubobject<UTerrainLayer>("MountainLayer");
 }
 
+FVector UTerrainComponent::EvaluateTerrain(const FVector& Point, const float Radius) const
+{
+	if (!NoiseWrapper || !ContinentLayer)
+	{
+		UE_LOG(LogTemp, Error, TEXT("NoiseWrapper or ContinentLayer is null!"));
+		return Point * Radius;
+	}
 
-// Called when the game starts
+	const float ContinentElevation = ContinentLayer->EvaluateTerrain(*NoiseWrapper, Point);
+	return Point * Radius * (ContinentElevation + 1);
+}
+
 void UTerrainComponent::BeginPlay()
 {
 	Super::BeginPlay();
 }
+
+
+
 
 
 

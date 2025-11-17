@@ -22,30 +22,9 @@ void APlanet::BeginPlay()
 	Super::BeginPlay();
 	DynamicMaterial = UMaterialInstanceDynamic::Create(BaseMaterial, this);
 	DynamicMaterial->SetVectorParameterValue(TEXT("Color"), Color);
-	GeneratePlanet();
 }
 
-void APlanet::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-}
-
-#if WITH_EDITOR
-void APlanet::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
-{
-	Super::PostEditChangeProperty(PropertyChangedEvent);
-	if (PropertyChangedEvent.Property != nullptr)
-	{
-		const FName PropertyName = PropertyChangedEvent.Property->GetFName();
-		if (PropertyName == GET_MEMBER_NAME_CHECKED(APlanet, Resolution))
-		{
-			GeneratePlanet();
-		}
-	}
-}
-#endif
-
-void APlanet::GeneratePlanet(bool Update) const
+void APlanet::GeneratePlanet() const
 {
 	const FVector Directions[6] = {
 		FVector::UpVector,
@@ -59,11 +38,11 @@ void APlanet::GeneratePlanet(bool Update) const
 	Mesh->ClearAllMeshSections();
 	for (int i = 0; i < 6; i++)
 	{
-		GenerateMesh(i, Directions[i], Update);
+		GenerateMesh(i, Directions[i]);
 	}
 }
 
-void APlanet::GenerateMesh(const int SectionIndex, const FVector& LocalUp, const bool Update) const
+void APlanet::GenerateMesh(const int SectionIndex, const FVector& LocalUp) const
 {
 	const FVector AxisX  = FVector(LocalUp.Y, LocalUp.Z, LocalUp.X);
 	const FVector AxisY = FVector::CrossProduct(LocalUp, AxisX);
@@ -80,37 +59,30 @@ void APlanet::GenerateMesh(const int SectionIndex, const FVector& LocalUp, const
 			const FVector2d Percent = FVector2d(x, y) / (Resolution - 1);
 			FVector PointOnUnitCube = LocalUp + (Percent.X - 0.5f) * 2 * AxisX + (Percent.Y - 0.5f) * 2 * AxisY;
 			FVector PointOnUnitSphere = PointOnUnitCube.GetSafeNormal();
-			Vertices.Add(PointOnUnitSphere * Radius);
+			Vertices.Add(Terrain->EvaluateTerrain(PointOnUnitSphere, Radius));
 			Normals.Add(PointOnUnitSphere);
 			
 			UVs.Add(FVector2D(static_cast<float>(x) / (Resolution - 1), static_cast<float>(y) / (Resolution - 1)));
 		}
 	}
 
-	if (!Update)
+	for (int y = 0; y < Resolution - 1; y++)
 	{
-		for (int y = 0; y < Resolution - 1; y++)
+		for (int x = 0; x < Resolution - 1; x++)
 		{
-			for (int x = 0; x < Resolution - 1; x++)
-			{
-				const int i = x + y * Resolution;
+			const int i = x + y * Resolution;
 			
-				Indices.Add(i);
-				Indices.Add(i + Resolution);
-				Indices.Add(i + Resolution + 1);
-				Indices.Add(i);
-				Indices.Add(i + Resolution + 1);
-				Indices.Add(i + 1);
-			}
+			Indices.Add(i);
+			Indices.Add(i + Resolution);
+			Indices.Add(i + Resolution + 1);
+			Indices.Add(i);
+			Indices.Add(i + Resolution + 1);
+			Indices.Add(i + 1);
 		}
 	}
 	
-	UE_LOG(LogTemp, Warning, TEXT("Section %d: %d vertices, %d triangles"), SectionIndex, Vertices.Num(), Indices.Num() / 3);
-	if (Update)
-		Mesh->UpdateMeshSection(SectionIndex, Vertices, Normals, UVs, TArray<FColor>(), TArray<FProcMeshTangent>());
-	else
-		Mesh->CreateMeshSection(SectionIndex, Vertices, Indices, Normals, UVs, TArray<FColor>(), TArray<FProcMeshTangent>(), false);
-	
+	//UE_LOG(LogTemp, Warning, TEXT("Section %d: %d vertices, %d triangles"), SectionIndex, Vertices.Num(), Indices.Num() / 3);
+	Mesh->CreateMeshSection(SectionIndex, Vertices, Indices, Normals, UVs, TArray<FColor>(), TArray<FProcMeshTangent>(), false);
 	Mesh->SetMaterial(SectionIndex, DynamicMaterial);
 }
 
@@ -130,5 +102,19 @@ void APlanet::UpdateColor(FLinearColor pColor)
 	for (int i = 0; i < 6; i++)
 		Mesh->SetMaterial(i, DynamicMaterial);
 
+}
+
+void APlanet::UpdateContinentLayerSettings(float Strength, float Roughness)
+{
+	Terrain->ContinentLayer->Strength = Strength;
+	Terrain->ContinentLayer->Roughness = Roughness;
+	GeneratePlanet();
+}
+
+void APlanet::UpdateMountainLayerSettings(float Strength, float Roughness)
+{
+	Terrain->MountainLayer->Strength = Strength;
+	Terrain->MountainLayer->Roughness = Roughness;
+	GeneratePlanet();
 }
 
