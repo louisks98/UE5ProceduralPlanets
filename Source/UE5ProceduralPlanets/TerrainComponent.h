@@ -26,7 +26,8 @@ UPROPERTY(EditAnywhere, BlueprintReadOnly)
 
 protected:
 	virtual void BeginPlay() override;
-	
+
 private:
-	UFastNoiseWrapper* NoiseWrapper = nullptr;
+	UPROPERTY()
+	UFastNoiseWrapper* NoiseWrapper;
 };

@@ -89,14 +89,12 @@ void APlanet::GenerateMesh(const int SectionIndex, const FVector& LocalUp) const
 void APlanet::UpdateRadius(float pRadius)
 {
 	Radius = pRadius;
-	UE_LOG(LogTemp, Warning, TEXT("Changed radius to: %f"), Radius);
 	GeneratePlanet();
 }
 
 void APlanet::UpdateColor(FLinearColor pColor)
 {
 	Color = pColor;
-	UE_LOG(LogTemp, Warning, TEXT("Changed color to: 0x%08X"), Color.ToFColorSRGB().ToPackedARGB());
 	DynamicMaterial->SetVectorParameterValue(TEXT("Color"), Color);
 
 	for (int i = 0; i < 6; i++)

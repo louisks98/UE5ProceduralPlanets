@@ -13,9 +13,9 @@ float UTerrainLayer::EvaluateTerrain(const UFastNoiseWrapper& NoiseWrapper, cons
 	{
 		FVector ptn = Point * frequency + Center;
 		float n = NoiseWrapper.GetNoise3D(ptn.X, ptn.Y, ptn.Z);
-		noise += (n + 1) + 0.5f * amplitude;
+		noise += (n + 1) * 0.5f * amplitude;
 		amplitude *= Persistence;
-		frequency += Roughness;
+		frequency *= Roughness;
 	}
 
 	noise = std::max(0.0f, noise - Height);
