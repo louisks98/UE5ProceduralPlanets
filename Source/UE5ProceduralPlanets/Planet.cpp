@@ -84,6 +84,8 @@ void APlanet::GenerateMesh(const int SectionIndex, const FVector& LocalUp) const
 	//UE_LOG(LogTemp, Warning, TEXT("Section %d: %d vertices, %d triangles"), SectionIndex, Vertices.Num(), Indices.Num() / 3);
 	Mesh->CreateMeshSection(SectionIndex, Vertices, Indices, Normals, UVs, TArray<FColor>(), TArray<FProcMeshTangent>(), false);
 	Mesh->SetMaterial(SectionIndex, DynamicMaterial);
+	DynamicMaterial->SetScalarParameterValue(TEXT("Min"), Terrain->GetLowestElevation());
+	DynamicMaterial->SetScalarParameterValue(TEXT("Max"), Terrain->GetHighestElevation());
 }
 
 void APlanet::UpdateRadius(float pRadius)

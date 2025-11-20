@@ -24,10 +24,18 @@ UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	
 	FVector EvaluateTerrain(const FVector& Point, float Radius) const;
 
+	float GetHighestElevation() const {return  HighestElevation;}
+	float GetLowestElevation() const {return LowestElevation;}
+	
 protected:
 	virtual void BeginPlay() override;
 
 private:
 	UPROPERTY()
 	UFastNoiseWrapper* NoiseWrapper;
+
+	mutable float HighestElevation = std::numeric_limits<float>::lowest();
+	mutable float LowestElevation = std::numeric_limits<float>::max();
+
+	void SetHighestAndLowestElevation(float elevation) const;
 };

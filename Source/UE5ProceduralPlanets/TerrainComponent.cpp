@@ -29,7 +29,10 @@ FVector UTerrainComponent::EvaluateTerrain(const FVector& Point, const float Rad
 
 	const float ContinentElevation = ContinentLayer->EvaluateTerrain(*NoiseWrapper, Point);
 	const float MountainElevation = MountainLayer->EvaluateTerrain(*NoiseWrapper, Point) * ContinentElevation;
-	return Point * Radius * (ContinentElevation + MountainElevation + 1);
+
+	float elevation = Radius * (ContinentElevation + MountainElevation + 1);
+	SetHighestAndLowestElevation(elevation);
+	return Point * elevation;
 }
 
 void UTerrainComponent::BeginPlay()
@@ -37,8 +40,10 @@ void UTerrainComponent::BeginPlay()
 	Super::BeginPlay();
 }
 
-
-
-
-
-
+void UTerrainComponent::SetHighestAndLowestElevation(float elevation) const
+{
+	if (elevation > HighestElevation)
+		HighestElevation = elevation;
+	if (elevation < LowestElevation)
+		LowestElevation = elevation;
+}
