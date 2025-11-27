@@ -3,6 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Biome.h"
+#include "Environment.h"
 #include "GameFramework/Actor.h"
 #include "ProceduralMeshComponent.h"
 #include "TerrainComponent.h"
@@ -29,16 +31,11 @@ UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Planet settings")
 	float Radius;
 UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Planet settings")
 	UTerrainComponent* Terrain;
-
-UFUNCTION(BlueprintCallable)
-	void UpdateColor(FLinearColor pColor);
+UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Planet settings")
+	UEnvironment* Environment;
+	
 UFUNCTION(BlueprintCallable)
 	void UpdateRadius(float pRadius);
-
-UFUNCTION(BlueprintCallable)
-	void UpdateContinentLayerSettings(float Strength, float Roughness);
-UFUNCTION(BlueprintCallable)
-	void UpdateMountainLayerSettings(float Strength, float Roughness);
 	
 UFUNCTION(BlueprintCallable)
 	void GeneratePlanet() const;
@@ -50,4 +47,5 @@ private:
 	UProceduralMeshComponent* Mesh;
 	
 	void GenerateMesh(int SectionIndex, const FVector& LocalUp) const;
+	void ApplyEnvironment() const;
 };

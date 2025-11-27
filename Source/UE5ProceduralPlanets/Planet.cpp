@@ -12,8 +12,9 @@ APlanet::APlanet()
 	Mesh->SetVisibility(true);
 	Mesh->SetHiddenInGame(false);
 	Terrain = CreateDefaultSubobject<UTerrainComponent>("Terrain");
+	Environment = CreateDefaultSubobject<UEnvironment>("Environment");
 	
-	Resolution = 10;
+	Resolution = 100;
 	Radius = 100;
 }
 
@@ -40,6 +41,8 @@ void APlanet::GeneratePlanet() const
 	{
 		GenerateMesh(i, Directions[i]);
 	}
+
+	ApplyEnvironment();
 }
 
 void APlanet::GenerateMesh(const int SectionIndex, const FVector& LocalUp) const
@@ -84,8 +87,35 @@ void APlanet::GenerateMesh(const int SectionIndex, const FVector& LocalUp) const
 	//UE_LOG(LogTemp, Warning, TEXT("Section %d: %d vertices, %d triangles"), SectionIndex, Vertices.Num(), Indices.Num() / 3);
 	Mesh->CreateMeshSection(SectionIndex, Vertices, Indices, Normals, UVs, TArray<FColor>(), TArray<FProcMeshTangent>(), false);
 	Mesh->SetMaterial(SectionIndex, DynamicMaterial);
+}
+
+void APlanet::ApplyEnvironment() const
+{
 	DynamicMaterial->SetScalarParameterValue(TEXT("Min"), Terrain->GetLowestElevation());
 	DynamicMaterial->SetScalarParameterValue(TEXT("Max"), Terrain->GetHighestElevation());
+
+	UTexture2D* Gradient = Environment->GenerateBiomesTexture();
+	DynamicMaterial->SetTextureParameterValue(TEXT("Gradient"), Gradient);
+	
+	for (int i = 0 ; i < Mesh->GetNumSections(); i++)
+	{
+		FProcMeshSection* Section = Mesh->GetProcMeshSection(i);
+		TArray<FProcMeshVertex>& Vertices = Section->ProcVertexBuffer;
+		TArray<FVector2D> UVs;
+		TArray<FVector> Normals;
+		TArray<FVector> Positions;
+	
+		for (const FProcMeshVertex& Vertex : Vertices)
+		{
+			FVector Normal = Vertex.Normal;
+			float BiomePercent = Environment->FindBiomePercentageFromPoint(Normal);
+			UVs.Add(FVector2D(BiomePercent, 0));
+			Normals.Add(Normal);
+			Positions.Add(Vertex.Position);
+		}
+	
+		Mesh->UpdateMeshSection(i, Positions, Normals, UVs, TArray<FColor>(), TArray<FProcMeshTangent>());
+	}
 }
 
 void APlanet::UpdateRadius(float pRadius)
@@ -93,28 +123,3 @@ void APlanet::UpdateRadius(float pRadius)
 	Radius = pRadius;
 	GeneratePlanet();
 }
-
-void APlanet::UpdateColor(FLinearColor pColor)
-{
-	Color = pColor;
-	DynamicMaterial->SetVectorParameterValue(TEXT("Color"), Color);
-
-	for (int i = 0; i < 6; i++)
-		Mesh->SetMaterial(i, DynamicMaterial);
-
-}
-
-void APlanet::UpdateContinentLayerSettings(float Strength, float Roughness)
-{
-	Terrain->ContinentLayer->Strength = Strength;
-	Terrain->ContinentLayer->Roughness = Roughness;
-	GeneratePlanet();
-}
-
-void APlanet::UpdateMountainLayerSettings(float Strength, float Roughness)
-{
-	Terrain->MountainLayer->Strength = Strength;
-	Terrain->MountainLayer->Roughness = Roughness;
-	GeneratePlanet();
-}
-

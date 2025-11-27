@@ -1,9 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "TerrainLayer.h"
+#include "NoiseLayer.h"
 
-float UTerrainLayer::EvaluateTerrain(const UFastNoiseWrapper& NoiseWrapper, const FVector& Point) const
+float UNoiseLayer::EvaluateNoise(const UFastNoiseWrapper& NoiseWrapper, const FVector& Point) const
 {
 	float noise = 0;
 	float amplitude = 1;

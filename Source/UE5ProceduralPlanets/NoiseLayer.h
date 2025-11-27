@@ -5,11 +5,11 @@
 #include "CoreMinimal.h"
 #include "UObject/Object.h"
 #include "FastNoiseWrapper.h"
-#include "TerrainLayer.generated.h"
+#include "NoiseLayer.generated.h"
 
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
-class UE5PROCEDURALPLANETS_API UTerrainLayer : public UObject
+class UE5PROCEDURALPLANETS_API UNoiseLayer : public UObject
 {
 	GENERATED_BODY()
 
@@ -29,5 +29,5 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FVector Center;
 	
-	float EvaluateTerrain(const UFastNoiseWrapper& NoiseWrapper, const FVector& Point) const;
+	float EvaluateNoise(const UFastNoiseWrapper& NoiseWrapper, const FVector& Point) const;
 };

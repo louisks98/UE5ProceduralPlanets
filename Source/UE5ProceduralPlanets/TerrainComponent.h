@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "TerrainLayer.h"
+#include "NoiseLayer.h"
 #include "Components/ActorComponent.h"
 #include "FastNoiseWrapper.h"
 #include "TerrainComponent.generated.h"
@@ -18,9 +18,9 @@ public:
 	UTerrainComponent();
 
 UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	UTerrainLayer* ContinentLayer;
+	UNoiseLayer* ContinentLayer;
 UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	UTerrainLayer* MountainLayer;
+	UNoiseLayer* MountainLayer;
 	
 	FVector EvaluateTerrain(const FVector& Point, float Radius) const;
 
