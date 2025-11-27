@@ -13,7 +13,7 @@ APlanet::APlanet()
 	Mesh->SetHiddenInGame(false);
 	Terrain = CreateDefaultSubobject<UTerrainComponent>("Terrain");
 	Environment = CreateDefaultSubobject<UEnvironment>("Environment");
-	
+
 	Resolution = 100;
 	Radius = 100;
 }
@@ -21,12 +21,15 @@ APlanet::APlanet()
 void APlanet::BeginPlay()
 {
 	Super::BeginPlay();
+	Environment->RandomizeBiomes();
+
 	DynamicMaterial = UMaterialInstanceDynamic::Create(BaseMaterial, this);
 	DynamicMaterial->SetVectorParameterValue(TEXT("Color"), Color);
 }
 
 void APlanet::GeneratePlanet() const
 {
+	Terrain->ResetElevation();
 	const FVector Directions[6] = {
 		FVector::UpVector,
 		FVector::ForwardVector,
@@ -35,7 +38,7 @@ void APlanet::GeneratePlanet() const
 		FVector::LeftVector,
 		FVector::RightVector
 	};
-	
+
 	Mesh->ClearAllMeshSections();
 	for (int i = 0; i < 6; i++)
 	{
@@ -84,7 +87,6 @@ void APlanet::GenerateMesh(const int SectionIndex, const FVector& LocalUp) const
 		}
 	}
 	
-	//UE_LOG(LogTemp, Warning, TEXT("Section %d: %d vertices, %d triangles"), SectionIndex, Vertices.Num(), Indices.Num() / 3);
 	Mesh->CreateMeshSection(SectionIndex, Vertices, Indices, Normals, UVs, TArray<FColor>(), TArray<FProcMeshTangent>(), false);
 	Mesh->SetMaterial(SectionIndex, DynamicMaterial);
 }
@@ -93,7 +95,7 @@ void APlanet::ApplyEnvironment() const
 {
 	DynamicMaterial->SetScalarParameterValue(TEXT("Min"), Terrain->GetLowestElevation());
 	DynamicMaterial->SetScalarParameterValue(TEXT("Max"), Terrain->GetHighestElevation());
-
+	
 	UTexture2D* Gradient = Environment->GenerateBiomesTexture();
 	DynamicMaterial->SetTextureParameterValue(TEXT("Gradient"), Gradient);
 	

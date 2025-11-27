@@ -29,9 +29,9 @@ UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Planet settings")
 	FLinearColor Color;
 UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Planet settings")
 	float Radius;
-UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Planet settings")
+UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Planet settings")
 	UTerrainComponent* Terrain;
-UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Planet settings")
+UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Planet settings")
 	UEnvironment* Environment;
 	
 UFUNCTION(BlueprintCallable)

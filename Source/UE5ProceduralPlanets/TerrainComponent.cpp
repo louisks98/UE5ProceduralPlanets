@@ -47,3 +47,9 @@ void UTerrainComponent::SetHighestAndLowestElevation(float elevation) const
 	if (elevation < LowestElevation)
 		LowestElevation = elevation;
 }
+
+void UTerrainComponent::ResetElevation() const
+{
+	HighestElevation = std::numeric_limits<float>::lowest();
+	LowestElevation = std::numeric_limits<float>::max();
+}

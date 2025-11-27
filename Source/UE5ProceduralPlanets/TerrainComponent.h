@@ -17,16 +17,17 @@ class UE5PROCEDURALPLANETS_API UTerrainComponent : public UActorComponent
 public:	
 	UTerrainComponent();
 
-UPROPERTY(EditAnywhere, BlueprintReadOnly)
+UPROPERTY(Transient, BlueprintReadOnly)
 	UNoiseLayer* ContinentLayer;
-UPROPERTY(EditAnywhere, BlueprintReadOnly)
+UPROPERTY(Transient, BlueprintReadOnly)
 	UNoiseLayer* MountainLayer;
 	
 	FVector EvaluateTerrain(const FVector& Point, float Radius) const;
 
 	float GetHighestElevation() const {return  HighestElevation;}
 	float GetLowestElevation() const {return LowestElevation;}
-	
+	void ResetElevation() const;
+
 protected:
 	virtual void BeginPlay() override;
 

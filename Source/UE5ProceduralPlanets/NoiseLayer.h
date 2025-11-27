@@ -14,19 +14,19 @@ class UE5PROCEDURALPLANETS_API UNoiseLayer : public UObject
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(Transient, BlueprintReadOnly)
 	int NoiseNumPass = 5;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(Transient, BlueprintReadWrite)
 	float Strength = 0.2f;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(Transient, BlueprintReadWrite)
 	float BaseRoughness = 1;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(Transient, BlueprintReadWrite)
 	float Roughness = 2;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(Transient, BlueprintReadWrite)
 	float Persistence = 0.5f;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(Transient, BlueprintReadWrite)
 	float Height = 0.5f;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(Transient, BlueprintReadWrite)
 	FVector Center;
 	
 	float EvaluateNoise(const UFastNoiseWrapper& NoiseWrapper, const FVector& Point) const;
