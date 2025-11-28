@@ -13,26 +13,26 @@ UTerrainComponent::UTerrainComponent()
 	MountainLayer = CreateDefaultSubobject<UNoiseLayer>("MountainLayer");
 }
 
-FVector UTerrainComponent::EvaluateTerrain(const FVector& Point, const float Radius) const
+float UTerrainComponent::EvaluateUnscaledTerrain(const FVector& Point) const
 {
 	if (!NoiseWrapper)
 	{
 		UE_LOG(LogTemp, Error, TEXT("NoiseWrapper or ContinentLayer is null!"));
-		return Point * Radius;
+		return 1.0f;
 	}
 
 	if (!NoiseWrapper->IsInitialized())
 	{
 		UE_LOG(LogTemp, Error, TEXT("NoiseWrapper not initialized"));
-		return Point * Radius;
+		return 1.0f;
 	}
 
 	const float ContinentElevation = ContinentLayer->EvaluateNoise(*NoiseWrapper, Point);
 	const float MountainElevation = MountainLayer->EvaluateNoise(*NoiseWrapper, Point) * ContinentElevation;
 
-	float elevation = Radius * (ContinentElevation + MountainElevation + 1);
-	SetHighestAndLowestElevation(elevation);
-	return Point * elevation;
+	float Elevation = ContinentElevation + MountainElevation;
+	SetHighestAndLowestElevation(Elevation);
+	return Elevation;
 }
 
 void UTerrainComponent::BeginPlay()

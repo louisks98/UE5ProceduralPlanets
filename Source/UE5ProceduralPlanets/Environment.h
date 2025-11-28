@@ -37,20 +37,22 @@ inline ColorStyle DesertColors = ColorStyle(FLinearColor(0.831f, 0.635f, 0.416f)
 struct BiomeType
 {
 	FString Name;
-	TArray<ColorStyle> Colors;
+	TArray<ColorStyle> OceanColors;
+	TArray<ColorStyle> LandColors;
 
-	explicit BiomeType(FString Name, const TArray<ColorStyle>& ColorStyles)
+	explicit BiomeType(FString Name, const TArray<ColorStyle>& LandColors, const TArray<ColorStyle>& WaterColors)
 	{
 		this->Name = Name;
-		this->Colors = ColorStyles;
+		this->LandColors = LandColors;
+		this->OceanColors = WaterColors;
 	}
 };
 
-inline BiomeType BasicBiome = BiomeType("Basic", TArray{WaterColor, GreenForestColors, DesertColors, IceColors});
-inline BiomeType FullForest = BiomeType("Forest", TArray{WaterColor, GreenForestColors, GreenForestColors, GreenForestColors});
-inline  BiomeType Desert = BiomeType("Desert", TArray{DesertColors, DesertColors, DesertColors});
-inline BiomeType Beach = BiomeType("Beach", TArray{WaterColor, DesertColors});
-inline BiomeType IceBiome = BiomeType("Ice", TArray{WaterColor, IceColors, IceColors, IceColors});
+inline BiomeType BasicBiome = BiomeType("Basic", TArray{GreenForestColors, GreenForestColors, DesertColors, IceColors}, TArray{WaterColor, WaterColor});
+inline BiomeType FullForest = BiomeType("Forest", TArray{GreenForestColors, GreenForestColors, GreenForestColors}, TArray{WaterColor, WaterColor});
+inline  BiomeType Desert = BiomeType("Desert", TArray{DesertColors, DesertColors, DesertColors}, TArray{DesertColors});
+inline BiomeType Beach = BiomeType("Beach", TArray{DesertColors, DesertColors}, TArray{WaterColor, WaterColor});
+inline BiomeType IceBiome = BiomeType("Ice", TArray{IceColors, IceColors, IceColors}, TArray{WaterColor, WaterColor});
 
 inline TArray BiomesTypes{BasicBiome, FullForest, Desert, Beach, IceBiome};
 
@@ -83,4 +85,5 @@ public:
 private:
 	int const Max_Biomes = 4;
 	UBiome* CreateBiome(const FRandomStream* Rand);
+	static void GenerateBiomeColors(TMap<float, FLinearColor>* BiomeColors, TArray<ColorStyle> Colors, const FRandomStream* Rand);
 };

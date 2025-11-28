@@ -1,17 +1,23 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "Biome.h"
 
 UBiome::UBiome()
 {
-	Colors.Add({0.0f, FLinearColor::White});
+	LandColors.Add({0.0f, FLinearColor::White});
 	StartHeight = 1.0f;
 }
 
-FLinearColor UBiome::EvaluateColor(const float t) const
+FLinearColor UBiome::EvaluateLandColor(const float t) const
 {
-	
+	return EvaluateColor(LandColors, t);
+}
+
+FLinearColor UBiome::EvaluateOceanColor(float t) const
+{
+	return EvaluateColor(OceanColors, t);
+}
+
+FLinearColor UBiome::EvaluateColor(const TMap<float, FLinearColor>& Colors, float t)
+{
 	TArray<float> Keys;
 	Colors.GetKeys(Keys);
 	Keys.Sort();

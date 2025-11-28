@@ -65,10 +65,12 @@ void APlanet::GenerateMesh(const int SectionIndex, const FVector& LocalUp) const
 			const FVector2d Percent = FVector2d(x, y) / (Resolution - 1);
 			FVector PointOnUnitCube = LocalUp + (Percent.X - 0.5f) * 2 * AxisX + (Percent.Y - 0.5f) * 2 * AxisY;
 			FVector PointOnUnitSphere = PointOnUnitCube.GetSafeNormal();
-			Vertices.Add(Terrain->EvaluateTerrain(PointOnUnitSphere, Radius));
+			const float UnscaledElevation = Terrain->EvaluateUnscaledTerrain(PointOnUnitSphere);
+			const float ScaledElevation = Radius * (FMath::Max(0, UnscaledElevation) + 1);
+			Vertices.Add(PointOnUnitSphere * ScaledElevation);
 			Normals.Add(PointOnUnitSphere);
 			
-			UVs.Add(FVector2D(static_cast<float>(x) / (Resolution - 1), static_cast<float>(y) / (Resolution - 1)));
+			UVs.Add(FVector2D(0, UnscaledElevation));
 		}
 	}
 
@@ -110,8 +112,9 @@ void APlanet::ApplyEnvironment() const
 		for (const FProcMeshVertex& Vertex : Vertices)
 		{
 			FVector Normal = Vertex.Normal;
+			const FVector2D UV = Vertex.UV0;
 			float BiomePercent = Environment->FindBiomePercentageFromPoint(Normal);
-			UVs.Add(FVector2D(BiomePercent, 0));
+			UVs.Add(FVector2D(BiomePercent, UV.Y));
 			Normals.Add(Normal);
 			Positions.Add(Vertex.Position);
 		}

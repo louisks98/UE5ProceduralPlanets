@@ -22,7 +22,7 @@ UPROPERTY(Transient, BlueprintReadOnly)
 UPROPERTY(Transient, BlueprintReadOnly)
 	UNoiseLayer* MountainLayer;
 	
-	FVector EvaluateTerrain(const FVector& Point, float Radius) const;
+	float EvaluateUnscaledTerrain(const FVector& Point) const;
 
 	float GetHighestElevation() const {return  HighestElevation;}
 	float GetLowestElevation() const {return LowestElevation;}

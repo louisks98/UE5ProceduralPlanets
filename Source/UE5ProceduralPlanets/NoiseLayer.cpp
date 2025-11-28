@@ -18,6 +18,6 @@ float UNoiseLayer::EvaluateNoise(const UFastNoiseWrapper& NoiseWrapper, const FV
 		frequency *= Roughness;
 	}
 
-	noise = std::max(0.0f, noise - Height);
+	noise = noise - Height;
 	return  noise * Strength;
 }

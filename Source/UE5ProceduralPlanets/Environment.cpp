@@ -13,7 +13,7 @@ UTexture2D* UEnvironment::GenerateBiomesTexture()
 	const int32 Width = 128;
 	const int32 Height = Biomes.Num();
 	
-	UTexture2D* Texture = UTexture2D::CreateTransient(Width, Height, PF_B8G8R8A8);
+	UTexture2D* Texture = UTexture2D::CreateTransient(Width * 2, Height, PF_B8G8R8A8);
 	if (!Texture) return nullptr;
 
 	Texture->CompressionSettings = TC_VectorDisplacementmap;
@@ -30,13 +30,24 @@ UTexture2D* UEnvironment::GenerateBiomesTexture()
 	for (int32 y = 0; y < Height; y++)
 	{
 		UBiome* Biome = Biomes[y];
-		for (int32 x = 0; x < Width; x++)
+		for (int32 x = 0; x < Width * 2; x++)
 		{
-			float t = static_cast<float>(x) / static_cast<float>(Width - 1);
-			FLinearColor GradientColor = Biome->EvaluateColor(t);
+			float t;
+			FLinearColor GradientColor;
+			if (x < Width)
+			{
+				t = static_cast<float>(x) / static_cast<float>(Width - 1);
+				GradientColor = Biome->EvaluateOceanColor(t);
+			}
+			else
+			{
+				t = static_cast<float>(x - Width) / static_cast<float>(Width - 1);
+				GradientColor = Biome->EvaluateLandColor(t);
+			}
+
 			FColor ByteColor = GradientColor.ToFColor(false);
-			
-			int32 PixelIndex = (y * Width + x) * 4;
+
+			int32 PixelIndex = (y * Width * 2 + x) * 4;
 			RawData[PixelIndex + 0] = ByteColor.B;
 			RawData[PixelIndex + 1] = ByteColor.G;
 			RawData[PixelIndex + 2] = ByteColor.R;
@@ -108,30 +119,32 @@ void UEnvironment::RandomizeBiomes()
 UBiome* UEnvironment::CreateBiome(const FRandomStream* Rand)
 {
 	UBiome* Biome = NewObject<UBiome>(this);
-	Biome->Colors.Empty();
-	int BiomeTypeIndex = Rand->RandRange(0, BiomesTypes.Num() - 1);
-	
-	BiomeType Type = BiomesTypes[BiomeTypeIndex];
-	const int NbColors = Type.Colors.Num();
-	float MinStepRange = 0.02f;
-	float MaxStepRange = 0.99f / NbColors;
+	Biome->LandColors.Empty();
+	Biome->OceanColors.Empty();
+
+	const int BiomeTypeIndex = Rand->RandRange(0, BiomesTypes.Num() - 1);
+	const BiomeType Type = BiomesTypes[BiomeTypeIndex];
+	GenerateBiomeColors(&Biome->LandColors, Type.LandColors, Rand);
+	GenerateBiomeColors(&Biome->OceanColors, Type.OceanColors, Rand);
+
+	return Biome;
+}
+
+void UEnvironment::GenerateBiomeColors(TMap<float, FLinearColor>* BiomeColors, TArray<ColorStyle> Colors, const FRandomStream* Rand)
+{
+	const int NbColors = Colors.Num();
+	float MinStepRange = 0.0f;
+	float MaxStepRange = 1.0f / NbColors;
 	
 	for (int32 i = 0; i < NbColors; i++)
 	{
-		ColorStyle Style = Type.Colors[i];
+		ColorStyle Style = Colors[i];
 		FLinearColor Color = Style.GetColorInRange(Rand);
-		if (i == 0)
-			Biome->Colors.Add({0.01f, Color});
-		else
-		{
-			float Step = Rand->FRandRange(MinStepRange, MaxStepRange);
-			Biome->Colors.Add({Step, Color});
-			MinStepRange = Step;
-			MaxStepRange = (0.99f - Step) / (NbColors - i);
-		}
+		float Step = Rand->FRandRange(MinStepRange, MaxStepRange);
+		BiomeColors->Add({Step, Color});
+		MinStepRange = Step + MaxStepRange / (i + 1);
+		MaxStepRange += 1.0f / NbColors;
 	}
-
-	return Biome;
 }
 
 
