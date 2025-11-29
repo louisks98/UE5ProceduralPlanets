@@ -1,6 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "Planet.h"
 
 APlanet::APlanet()
@@ -11,6 +8,7 @@ APlanet::APlanet()
 	RootComponent = Mesh;
 	Mesh->SetVisibility(true);
 	Mesh->SetHiddenInGame(false);
+	Mesh->bCastDynamicShadow = true;
 	Terrain = CreateDefaultSubobject<UTerrainComponent>("Terrain");
 	Environment = CreateDefaultSubobject<UEnvironment>("Environment");
 
@@ -21,31 +19,35 @@ APlanet::APlanet()
 void APlanet::BeginPlay()
 {
 	Super::BeginPlay();
-	Environment->RandomizeBiomes();
-
-	DynamicMaterial = UMaterialInstanceDynamic::Create(BaseMaterial, this);
-	DynamicMaterial->SetVectorParameterValue(TEXT("Color"), Color);
+	
+	DynamicTerrainMaterial = UMaterialInstanceDynamic::Create(BaseTerrainMaterial, this);
+	DynamicTerrainMaterial->SetVectorParameterValue(TEXT("Color"), Color);
+	
+	GeneratePlanet();
 }
 
 void APlanet::GeneratePlanet() const
 {
-	Terrain->ResetElevation();
-	const FVector Directions[6] = {
-		FVector::UpVector,
-		FVector::ForwardVector,
-		FVector::BackwardVector,
-		FVector::DownVector,
-		FVector::LeftVector,
-		FVector::RightVector
-	};
+	GenerateMeshes();
+	Terrain->RandomizeTerrain();
+	Environment->RandomizeBiomes();
+	ApplyEnvironment();
+}
 
+void APlanet::UpdatePlanet() const
+{
+	GenerateMeshes();
+	ApplyEnvironment();
+}
+
+void APlanet::GenerateMeshes() const
+{
+	Terrain->ResetElevation();
 	Mesh->ClearAllMeshSections();
 	for (int i = 0; i < 6; i++)
 	{
 		GenerateMesh(i, Directions[i]);
 	}
-
-	ApplyEnvironment();
 }
 
 void APlanet::GenerateMesh(const int SectionIndex, const FVector& LocalUp) const
@@ -90,16 +92,16 @@ void APlanet::GenerateMesh(const int SectionIndex, const FVector& LocalUp) const
 	}
 	
 	Mesh->CreateMeshSection(SectionIndex, Vertices, Indices, Normals, UVs, TArray<FColor>(), TArray<FProcMeshTangent>(), false);
-	Mesh->SetMaterial(SectionIndex, DynamicMaterial);
+	Mesh->SetMaterial(SectionIndex, DynamicTerrainMaterial);
 }
 
 void APlanet::ApplyEnvironment() const
 {
-	DynamicMaterial->SetScalarParameterValue(TEXT("Min"), Terrain->GetLowestElevation());
-	DynamicMaterial->SetScalarParameterValue(TEXT("Max"), Terrain->GetHighestElevation());
+	DynamicTerrainMaterial->SetScalarParameterValue(TEXT("Min"), Terrain->GetLowestElevation());
+	DynamicTerrainMaterial->SetScalarParameterValue(TEXT("Max"), Terrain->GetHighestElevation());
 	
 	UTexture2D* Gradient = Environment->GenerateBiomesTexture();
-	DynamicMaterial->SetTextureParameterValue(TEXT("Gradient"), Gradient);
+	DynamicTerrainMaterial->SetTextureParameterValue(TEXT("Gradient"), Gradient);
 	
 	for (int i = 0 ; i < Mesh->GetNumSections(); i++)
 	{
@@ -126,5 +128,5 @@ void APlanet::ApplyEnvironment() const
 void APlanet::UpdateRadius(float pRadius)
 {
 	Radius = pRadius;
-	GeneratePlanet();
+	UpdatePlanet();
 }

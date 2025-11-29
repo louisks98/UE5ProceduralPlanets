@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -27,9 +25,7 @@ UPROPERTY(Transient, BlueprintReadOnly)
 	float GetHighestElevation() const {return  HighestElevation;}
 	float GetLowestElevation() const {return LowestElevation;}
 	void ResetElevation() const;
-
-protected:
-	virtual void BeginPlay() override;
+	void RandomizeTerrain() const;
 
 private:
 	UPROPERTY()

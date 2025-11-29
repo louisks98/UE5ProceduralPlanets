@@ -1,6 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "TerrainComponent.h"
 
 UTerrainComponent::UTerrainComponent()
@@ -11,6 +8,7 @@ UTerrainComponent::UTerrainComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 	ContinentLayer = CreateDefaultSubobject<UNoiseLayer>("ContinentLayer");
 	MountainLayer = CreateDefaultSubobject<UNoiseLayer>("MountainLayer");
+	
 }
 
 float UTerrainComponent::EvaluateUnscaledTerrain(const FVector& Point) const
@@ -28,16 +26,11 @@ float UTerrainComponent::EvaluateUnscaledTerrain(const FVector& Point) const
 	}
 
 	const float ContinentElevation = ContinentLayer->EvaluateNoise(*NoiseWrapper, Point);
-	const float MountainElevation = MountainLayer->EvaluateNoise(*NoiseWrapper, Point) * ContinentElevation;
+	const float MountainElevation = MountainLayer->EvaluateRigidNoise(*NoiseWrapper, Point) * ContinentElevation;
 
 	float Elevation = ContinentElevation + MountainElevation;
 	SetHighestAndLowestElevation(Elevation);
 	return Elevation;
-}
-
-void UTerrainComponent::BeginPlay()
-{
-	Super::BeginPlay();
 }
 
 void UTerrainComponent::SetHighestAndLowestElevation(float elevation) const
@@ -52,4 +45,10 @@ void UTerrainComponent::ResetElevation() const
 {
 	HighestElevation = std::numeric_limits<float>::lowest();
 	LowestElevation = std::numeric_limits<float>::max();
+}
+
+void UTerrainComponent::RandomizeTerrain() const
+{
+	ContinentLayer->RandomizeNoiseParameters();
+	MountainLayer->RandomizeNoiseRigidParameters();
 }

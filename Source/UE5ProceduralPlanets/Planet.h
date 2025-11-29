@@ -1,9 +1,6 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Biome.h"
 #include "Environment.h"
 #include "GameFramework/Actor.h"
 #include "ProceduralMeshComponent.h"
@@ -21,9 +18,9 @@ public:
 UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Planet mesh")
 	int Resolution;
 UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Planet mesh")
-	UMaterialInterface* BaseMaterial;
+	UMaterialInterface* BaseTerrainMaterial;
 UPROPERTY(BlueprintReadOnly, Category = "Planet mesh")
-	UMaterialInstanceDynamic* DynamicMaterial;
+	UMaterialInstanceDynamic* DynamicTerrainMaterial;
 	
 UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Planet settings")
 	FLinearColor Color;
@@ -39,13 +36,25 @@ UFUNCTION(BlueprintCallable)
 	
 UFUNCTION(BlueprintCallable)
 	void GeneratePlanet() const;
+UFUNCTION(BlueprintCallable)
+	void UpdatePlanet() const;
 protected:
 	virtual void BeginPlay() override;
 	
 private:
+	const FVector Directions[6] = {
+		FVector::UpVector,
+		FVector::ForwardVector,
+		FVector::BackwardVector,
+		FVector::DownVector,
+		FVector::LeftVector,
+		FVector::RightVector
+	};
+	
 	UPROPERTY()
 	UProceduralMeshComponent* Mesh;
 	
+	void GenerateMeshes() const;
 	void GenerateMesh(int SectionIndex, const FVector& LocalUp) const;
 	void ApplyEnvironment() const;
 };

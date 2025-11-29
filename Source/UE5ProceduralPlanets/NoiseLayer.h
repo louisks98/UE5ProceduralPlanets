@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -27,7 +25,11 @@ public:
 	UPROPERTY(Transient, BlueprintReadWrite)
 	float Height = 0.5f;
 	UPROPERTY(Transient, BlueprintReadWrite)
-	FVector Center;
+	float WeightMultiplier = 0.8f;
 	
 	float EvaluateNoise(const UFastNoiseWrapper& NoiseWrapper, const FVector& Point) const;
+	float EvaluateRigidNoise(const UFastNoiseWrapper& NoiseWrapper, const FVector& Point) const;
+
+	void RandomizeNoiseParameters();
+	void RandomizeNoiseRigidParameters();
 };
