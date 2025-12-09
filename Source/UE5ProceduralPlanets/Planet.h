@@ -15,9 +15,12 @@ class UE5PROCEDURALPLANETS_API APlanet : public AActor
 	
 public:
 	APlanet();
+	virtual ~APlanet() override;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Planet mesh")
 	int PlanetResolution;
+	UPROPERTY(EditAnywhere, Category = "Planet mesh")
+	UProceduralMeshComponent* PlanetMesh;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Planet mesh")
 	UMaterialInterface* BaseTerrainMaterial;
 	UPROPERTY(BlueprintReadOnly, Category = "Planet mesh")
@@ -31,34 +34,43 @@ public:
 	UTerrainComponent* Terrain;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Planet settings")
 	UEnvironment* Environment;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Planet mesh")
-	UProceduralMeshComponent* PlanetMesh;
 
 #if WITH_EDITORONLY_DATA
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DEBUG")
 	bool WriteGradientTextureOnDisk = false;
 	UFUNCTION(BlueprintCallable, CallInEditor)
 	void GenerateInEditor();
-	UFUNCTION(BlueprintCallable, CallInEditor)
-	void ConvertToStaticMesh();
 #endif
 	
 	UFUNCTION(BlueprintCallable)
 	void UpdateRadius(float pRadius);
 	
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void SetVisible(bool Visible) const;
 	
 	UFUNCTION(BlueprintCallable)
-	void GeneratePlanet() const;
+	void GeneratePlanet();
 	UFUNCTION(BlueprintCallable)
-	void UpdatePlanet() const;
-	
+	void GeneratePlanetAsync();
+	UFUNCTION(BlueprintCallable)
+	void UpdatePlanetAsync();
+	UFUNCTION(BlueprintCallable)
+	bool IsGeneratingPlanet() const;
+
 protected:
 	virtual void BeginPlay() override;
-	
+	virtual void Tick(float DeltaTime) override;
+
 private:
 	bool EditorGenerated = false;
+	MeshGenerator* AsyncMeshGenerator = nullptr;
 	
+	bool bApplyingEnvironment = false;
+	int CurrentEnvironmentFace = 0;
+
 	void ApplyEnvironment() const;
+	void StartAsyncEnvironment();
+	bool UpdateAsyncEnvironment();
+	void SetUpMaterial() const;
+	void SetUpUVs(int SectionId) const;
 };

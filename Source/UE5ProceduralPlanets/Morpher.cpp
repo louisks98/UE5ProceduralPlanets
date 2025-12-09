@@ -25,6 +25,7 @@ void AMorpher::MorphIn()
 
 	int NumSectionA = MeshA->GetNumSections();
 	int NumSectionB = MeshB->GetNumSections();
+	
 	for (int i = 0; i < NumSectionA; i++)
 		MeshA->SetMaterial(i, MorphInMaterialInstanceA);
 
@@ -85,8 +86,6 @@ void AMorpher::BeginPlay()
 	MorphInMaterialInstanceA = UMaterialInstanceDynamic::Create(MorphInMaterialA, this);
 	MorphOutMaterialInstanceB = UMaterialInstanceDynamic::Create(MorphOutMaterialB, this);
 	MorphInMaterialInstanceB = UMaterialInstanceDynamic::Create(MorphInMaterialB, this);
-
-	FireOverlayMaterialInstance = UMaterialInstanceDynamic::Create(FireOverlayMaterial, this);
 }
 
 void AMorpher::Tick(float DeltaTime)

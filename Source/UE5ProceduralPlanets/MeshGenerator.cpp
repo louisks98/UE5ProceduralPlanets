@@ -1,11 +1,6 @@
-
 #include "MeshGenerator.h"
 #include "ProceduralMeshComponent.h"
-#include "StaticMeshAttributes.h"
 #include "Engine/StaticMesh.h"
-#include "UObject/SavePackage.h"
-#include "AssetRegistry/AssetRegistryModule.h"
-
 
 void MeshGenerator::GenerateTerrainMeshes() const
 {
@@ -90,7 +85,7 @@ TArray<int> MeshGenerator::GenerateMeshIndices() const
 		for (int x = 0; x < Resolution - 1; x++)
 		{
 			const int i = x + y * Resolution;
-			
+
 			Indices.Add(i);
 			Indices.Add(i + Resolution);
 			Indices.Add(i + Resolution + 1);
@@ -99,6 +94,40 @@ TArray<int> MeshGenerator::GenerateMeshIndices() const
 			Indices.Add(i + 1);
 		}
 	}
-	
+
 	return Indices;
+}
+
+void MeshGenerator::StartAsyncGeneration() const
+{
+	if (bIsGenerating)
+		return;
+
+	bIsGenerating = true;
+	CurrentFace = 0;
+	Mesh->ClearAllMeshSections();
+
+	if (Terrain)
+		Terrain->ResetElevation();
+}
+
+bool MeshGenerator::UpdateAsyncGeneration() const
+{
+	if (!bIsGenerating)
+		return true;
+
+	if (CurrentFace < 6)
+	{
+		if (Terrain)
+			GenerateTerrainMesh(CurrentFace, Directions[CurrentFace]);
+		else
+			GenerateSimpleMesh(CurrentFace, Directions[CurrentFace]);
+
+		CurrentFace++;
+		return false;
+	}
+	
+	bIsGenerating = false;
+	CurrentFace = 0;
+	return true;
 }

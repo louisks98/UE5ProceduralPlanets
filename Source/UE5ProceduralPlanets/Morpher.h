@@ -1,9 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "NiagaraFunctionLibrary.h"
 #include "Planet.h"
-#include "ProceduralMeshComponent.h"
 #include "GameFramework/Actor.h"
 #include "Morpher.generated.h"
 
@@ -16,8 +14,6 @@ public:
 	AMorpher();
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UNiagaraSystem* MorphSystem;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UMaterialInterface* MorphOutMaterialA;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UMaterialInterface* MorphInMaterialA;
@@ -25,10 +21,7 @@ public:
 	UMaterialInterface* MorphOutMaterialB;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UMaterialInterface* MorphInMaterialB;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UMaterialInterface* FireOverlayMaterial;
-
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	APlanet* PlanetA;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -39,9 +32,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void MorphOut();
 
-	UFUNCTION(BlueprintCallable, CallInEditor)
+	UFUNCTION(CallInEditor)
 	void MorphInEditor();
-	UFUNCTION(BlueprintCallable, CallInEditor)
+	UFUNCTION(CallInEditor)
 	void MorphOutEditor();
 
 protected:
@@ -62,9 +55,6 @@ private:
 	UMaterialInstanceDynamic* MorphOutMaterialInstanceB;
 	UPROPERTY()
 	UMaterialInstanceDynamic* MorphInMaterialInstanceB;
-
-	UPROPERTY()
-	UMaterialInstanceDynamic* FireOverlayMaterialInstance;
 
 	bool MorphingIn = false;
 	bool MorphingOut = false;

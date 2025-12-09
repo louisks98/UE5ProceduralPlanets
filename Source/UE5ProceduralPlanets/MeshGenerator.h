@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -28,6 +26,10 @@ public:
 	
 	void GenerateTerrainMeshes() const;
 	void GenerateSimpleMeshes() const;
+	
+	void StartAsyncGeneration() const;
+	bool UpdateAsyncGeneration() const;
+	bool IsGenerating() const { return bIsGenerating; }
 
 private:
 	const FVector Directions[6] = {
@@ -44,6 +46,9 @@ private:
 	int Resolution;
 	int Radius;
 	
+	mutable bool bIsGenerating = false;
+	mutable int CurrentFace = 0;
+
 	void GenerateTerrainMesh(int SectionIndex, const FVector& LocalUp) const;
 	void GenerateSimpleMesh(int SectionIndex, const FVector& LocalUp) const;
 	TArray<int> GenerateMeshIndices() const;

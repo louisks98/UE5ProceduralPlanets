@@ -139,7 +139,7 @@ UBiome* UEnvironment::CreateBiome(const FRandomStream* Rand)
 	Biome->OceanColors.Empty();
 
 	const int BiomeTypeIndex = Rand->RandRange(0, BiomesTypes.Num() - 1);
-	const BiomeType Type = BasicBiome;//BiomesTypes[BiomeTypeIndex];
+	const BiomeType Type = BiomesTypes[BiomeTypeIndex];
 	GenerateBiomeColors(&Biome->LandColors, Type.LandColors, Rand);
 	GenerateBiomeColors(&Biome->OceanColors, Type.OceanColors, Rand);
 
