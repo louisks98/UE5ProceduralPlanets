@@ -15,10 +15,13 @@ class UE5PROCEDURALPLANETS_API UTerrainComponent : public UActorComponent
 public:	
 	UTerrainComponent();
 
-UPROPERTY(Transient, BlueprintReadOnly)
+	UPROPERTY(Transient, BlueprintReadOnly)
 	UNoiseLayer* ContinentLayer;
-UPROPERTY(Transient, BlueprintReadOnly)
+	UPROPERTY(Transient, BlueprintReadOnly)
 	UNoiseLayer* MountainLayer;
+	UPROPERTY(Transient, BlueprintReadOnly)
+	UNoiseLayer* DetailLayer;
+	
 	
 	float EvaluateUnscaledTerrain(const FVector& Point) const;
 

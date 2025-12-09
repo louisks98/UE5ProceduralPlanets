@@ -26,11 +26,17 @@ public:
 		const float RandValue = Rand->GetFraction();
 		return FMath::Lerp(ColorA, ColorB, RandValue);
 	}
+
+	FLinearColor GetColorInRange(const FRandomStream* Rand, const FLinearColor PreviousColor) const
+	{
+		const float RandValue = Rand->GetFraction();
+		return FMath::Lerp(PreviousColor, ColorB, RandValue);
+	}
 };
 
-inline ColorStyle WaterColor = ColorStyle(FLinearColor(0.529f, 0.808f, 0.922f), FLinearColor(0.0f, 0.749f, 1.0f));
-inline ColorStyle IceColors = ColorStyle(FLinearColor(0.973f, 0.973f, 1.0f), FLinearColor(0.690f, 0.816f, 0.878f));
-inline ColorStyle GreenForestColors = ColorStyle(FLinearColor(0.235f, 0.702f, 0.443f), FLinearColor(0.180f, 0.490f, 0.196f));
+inline ColorStyle WaterColor = ColorStyle(FLinearColor(0.0f,0.26f,0.51f), FLinearColor(0.0f,0.102f,0.204f));
+inline ColorStyle IceColors = ColorStyle(FLinearColor(0.427f, 0.895f, 1.0f), FLinearColor(0.973f, 0.973f, 1.0f));
+inline ColorStyle GreenForestColors = ColorStyle(FLinearColor(0.29f, 0.404f, 0.255f), FLinearColor(0.133f, 0.192f, 0.114f));
 inline ColorStyle DesertColors = ColorStyle(FLinearColor(0.831f, 0.635f, 0.416f), FLinearColor(0.475f, 0.333f, 0.282f));
 
 
@@ -48,11 +54,11 @@ struct BiomeType
 	}
 };
 
-inline BiomeType BasicBiome = BiomeType("Basic", TArray{GreenForestColors, GreenForestColors, DesertColors, IceColors}, TArray{WaterColor, WaterColor});
-inline BiomeType FullForest = BiomeType("Forest", TArray{GreenForestColors, GreenForestColors, GreenForestColors}, TArray{WaterColor, WaterColor});
+inline BiomeType BasicBiome = BiomeType("Basic", TArray{GreenForestColors, GreenForestColors, DesertColors, DesertColors, IceColors}, TArray{WaterColor, WaterColor, WaterColor});
+inline BiomeType FullForest = BiomeType("Forest", TArray{GreenForestColors, GreenForestColors, GreenForestColors}, TArray{WaterColor, WaterColor, WaterColor});
 inline  BiomeType Desert = BiomeType("Desert", TArray{DesertColors, DesertColors, DesertColors}, TArray{DesertColors});
-inline BiomeType Beach = BiomeType("Beach", TArray{DesertColors, DesertColors}, TArray{WaterColor, WaterColor});
-inline BiomeType IceBiome = BiomeType("Ice", TArray{IceColors, IceColors, IceColors}, TArray{WaterColor, WaterColor});
+inline BiomeType Beach = BiomeType("Beach", TArray{DesertColors, DesertColors, DesertColors}, TArray{WaterColor, WaterColor, WaterColor});
+inline BiomeType IceBiome = BiomeType("Ice", TArray{IceColors, IceColors, IceColors}, TArray{WaterColor, WaterColor, WaterColor});
 
 inline TArray BiomesTypes{BasicBiome, FullForest, Desert, Beach, IceBiome};
 
@@ -77,9 +83,11 @@ public:
 	float NoiseStrength = 1.0f;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Biomes")
 	float BlendAmount = 0.4;
+
+	bool WriteTextureOnDisk = false;
 	
 	UTexture2D* GenerateBiomesTexture();
-	float FindBiomePercentageFromPoint(FVector Point);
+	float FindBiomePercentageFromPoint(FVector Position, const FVector& Normal);
 	void RandomizeBiomes();
 	
 private:

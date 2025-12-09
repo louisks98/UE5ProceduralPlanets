@@ -13,7 +13,7 @@ class UE5PROCEDURALPLANETS_API UNoiseLayer : public UObject
 
 public:
 	UPROPERTY(Transient, BlueprintReadOnly)
-	int NoiseNumPass = 5;
+	int NoiseNumPass = 8;
 	UPROPERTY(Transient, BlueprintReadWrite)
 	float Strength = 0.2f;
 	UPROPERTY(Transient, BlueprintReadWrite)

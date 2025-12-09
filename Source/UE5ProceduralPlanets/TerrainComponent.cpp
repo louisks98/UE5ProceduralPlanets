@@ -8,6 +8,7 @@ UTerrainComponent::UTerrainComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 	ContinentLayer = CreateDefaultSubobject<UNoiseLayer>("ContinentLayer");
 	MountainLayer = CreateDefaultSubobject<UNoiseLayer>("MountainLayer");
+	DetailLayer = CreateDefaultSubobject<UNoiseLayer>("DetailLayer");
 	
 }
 
@@ -26,11 +27,13 @@ float UTerrainComponent::EvaluateUnscaledTerrain(const FVector& Point) const
 	}
 
 	const float ContinentElevation = ContinentLayer->EvaluateNoise(*NoiseWrapper, Point);
-	const float MountainElevation = MountainLayer->EvaluateRigidNoise(*NoiseWrapper, Point) * ContinentElevation;
+	const float MountainElevation = MountainLayer->EvaluateRigidNoise(*NoiseWrapper, Point);
+	const float DetailElevation = DetailLayer->EvaluateRigidNoise(*NoiseWrapper, Point);
 
-	float Elevation = ContinentElevation + MountainElevation;
+	const float Elevation = ContinentElevation + MountainElevation * ContinentElevation;
 	SetHighestAndLowestElevation(Elevation);
-	return Elevation;
+	const float DetailStrength = 0.05f + (abs(MountainElevation) * 0.1f);
+	return Elevation + DetailElevation * DetailStrength;
 }
 
 void UTerrainComponent::SetHighestAndLowestElevation(float elevation) const

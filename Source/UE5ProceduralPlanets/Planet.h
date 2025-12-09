@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Environment.h"
+#include "MeshGenerator.h"
 #include "GameFramework/Actor.h"
 #include "ProceduralMeshComponent.h"
 #include "TerrainComponent.h"
@@ -15,46 +16,49 @@ class UE5PROCEDURALPLANETS_API APlanet : public AActor
 public:
 	APlanet();
 	
-UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Planet mesh")
-	int Resolution;
-UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Planet mesh")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Planet mesh")
+	int PlanetResolution;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Planet mesh")
 	UMaterialInterface* BaseTerrainMaterial;
-UPROPERTY(BlueprintReadOnly, Category = "Planet mesh")
+	UPROPERTY(BlueprintReadOnly, Category = "Planet mesh")
 	UMaterialInstanceDynamic* DynamicTerrainMaterial;
-	
-UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Planet settings")
-	FLinearColor Color;
-UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Planet settings")
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Planet settings")
+	bool BuildTerrain = true;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Planet settings")
 	float Radius;
-UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Planet settings")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Planet settings")
 	UTerrainComponent* Terrain;
-UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Planet settings")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Planet settings")
 	UEnvironment* Environment;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Planet mesh")
+	UProceduralMeshComponent* PlanetMesh;
+
+#if WITH_EDITORONLY_DATA
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DEBUG")
+	bool WriteGradientTextureOnDisk = false;
+	UFUNCTION(BlueprintCallable, CallInEditor)
+	void GenerateInEditor();
+	UFUNCTION(BlueprintCallable, CallInEditor)
+	void ConvertToStaticMesh();
+#endif
 	
-UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable)
 	void UpdateRadius(float pRadius);
 	
-UFUNCTION(BlueprintCallable)
+	UFUNCTION()
+	void SetVisible(bool Visible) const;
+	
+	UFUNCTION(BlueprintCallable)
 	void GeneratePlanet() const;
-UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable)
 	void UpdatePlanet() const;
+	
 protected:
 	virtual void BeginPlay() override;
 	
 private:
-	const FVector Directions[6] = {
-		FVector::UpVector,
-		FVector::ForwardVector,
-		FVector::BackwardVector,
-		FVector::DownVector,
-		FVector::LeftVector,
-		FVector::RightVector
-	};
+	bool EditorGenerated = false;
 	
-	UPROPERTY()
-	UProceduralMeshComponent* Mesh;
-	
-	void GenerateMeshes() const;
-	void GenerateMesh(int SectionIndex, const FVector& LocalUp) const;
 	void ApplyEnvironment() const;
 };

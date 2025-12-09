@@ -1,4 +1,7 @@
 #include "Environment.h"
+
+#include "AssetTypeCategories.h"
+#include "ImageUtils.h"
 #include "NoiseLayer.h"
 
 UEnvironment::UEnvironment()
@@ -54,17 +57,29 @@ UTexture2D* UEnvironment::GenerateBiomesTexture()
 			RawData[PixelIndex + 3] = ByteColor.A;
 		}
 	}
-
+	
 	ImageData.Unlock();
 	Texture->UpdateResource();
 
+	if (WriteTextureOnDisk)
+	{
+		FImageView ImageView(
+		RawData,
+		Width,
+		Height,
+		ERawImageFormat::BGRA8
+		);
+		FString FilePath = FPaths::ProjectSavedDir() + TEXT("Gradient.png");
+		FImageUtils::SaveImageAutoFormat(*FilePath, ImageView);
+	}
+	
 	return Texture;
 }
 
-float UEnvironment::FindBiomePercentageFromPoint(FVector Point)
+float UEnvironment::FindBiomePercentageFromPoint(FVector Position, const FVector& Normal)
 {
-	float HeightPercent = (Point.Z + 1) / 2.0f;
-	HeightPercent += (BiomeNoiseLayer->EvaluateNoise(*NoiseWrapper, Point) - NoiseOffSet) * NoiseStrength;
+	float HeightPercent = (Normal.Z + 1) / 2.0f;
+	HeightPercent += (BiomeNoiseLayer->EvaluateNoise(*NoiseWrapper, Normal) - NoiseOffSet) * NoiseStrength;
 	
 	int CurrentBiomeIndex = 0;
 	for (int i = Biomes.Num() - 1; i >= 0; i--)
@@ -114,6 +129,7 @@ void UEnvironment::RandomizeBiomes()
 		Biomes.Add(Biome);
 		Height += 1.0f / NbBiomes;
 	}
+	BiomeNoiseLayer->RandomizeNoiseParameters();
 }
 
 UBiome* UEnvironment::CreateBiome(const FRandomStream* Rand)
@@ -123,7 +139,7 @@ UBiome* UEnvironment::CreateBiome(const FRandomStream* Rand)
 	Biome->OceanColors.Empty();
 
 	const int BiomeTypeIndex = Rand->RandRange(0, BiomesTypes.Num() - 1);
-	const BiomeType Type = BiomesTypes[BiomeTypeIndex];
+	const BiomeType Type = BasicBiome;//BiomesTypes[BiomeTypeIndex];
 	GenerateBiomeColors(&Biome->LandColors, Type.LandColors, Rand);
 	GenerateBiomeColors(&Biome->OceanColors, Type.OceanColors, Rand);
 
@@ -135,15 +151,22 @@ void UEnvironment::GenerateBiomeColors(TMap<float, FLinearColor>* BiomeColors, T
 	const int NbColors = Colors.Num();
 	float MinStepRange = 0.0f;
 	float MaxStepRange = 1.0f / NbColors;
-	
+
+	FLinearColor PreviousColor = FLinearColor::Black;
 	for (int32 i = 0; i < NbColors; i++)
 	{
 		ColorStyle Style = Colors[i];
-		FLinearColor Color = Style.GetColorInRange(Rand);
+		FLinearColor Color;
+		if (PreviousColor != FLinearColor::Black)
+			Color = Style.GetColorInRange(Rand, PreviousColor);
+		else
+			Color = Style.GetColorInRange(Rand);
+		
 		float Step = Rand->FRandRange(MinStepRange, MaxStepRange);
 		BiomeColors->Add({Step, Color});
 		MinStepRange = Step + MaxStepRange / (i + 1);
 		MaxStepRange += 1.0f / NbColors;
+		PreviousColor = Color;
 	}
 }
 

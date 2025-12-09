@@ -49,8 +49,8 @@ void UNoiseLayer::RandomizeNoiseParameters()
 
 	Strength = RandomStream.FRandRange(0.1f, 0.3f);
 	BaseRoughness = RandomStream.FRandRange(0.5f, 1.0f);
-	Roughness = RandomStream.FRandRange(BaseRoughness + 0.75f, 2.5f);
-	Persistence = RandomStream.FRandRange(0.4f, 0.55f);
+	Roughness = RandomStream.FRandRange(BaseRoughness + 1.25f, 3.0f);
+	Persistence = RandomStream.FRandRange(0.5f, 0.55f);
 	Height = RandomStream.FRandRange(1.0f, 1.3f);
 }
 
@@ -59,10 +59,10 @@ void UNoiseLayer::RandomizeNoiseRigidParameters()
 	FRandomStream RandomStream;
 	RandomStream.GenerateNewSeed();
 	
-	Strength = 	RandomStream.FRandRange(0.2f, 0.8f);
-	BaseRoughness = RandomStream.FRandRange(0.5f, 1.5f);
-	Roughness = RandomStream.FRandRange(BaseRoughness + 0.75f, 3.0f);
+	Strength = 	RandomStream.FRandRange(0.3f, 1.0f);
+	BaseRoughness = RandomStream.FRandRange(1.0f, 2.0f);
+	Roughness = RandomStream.FRandRange(2.0f, 3.5f);
 	Persistence = RandomStream.FRandRange(0.5f, 0.65f);
 	Height = RandomStream.FRandRange(0.1f, 1.0f);
-	WeightMultiplier = RandomStream.FRandRange(0.1f, 1.5f);
+	WeightMultiplier = RandomStream.FRandRange(0.5f, 1.5f);
 }

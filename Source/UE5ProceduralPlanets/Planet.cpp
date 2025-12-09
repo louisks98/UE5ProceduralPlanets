@@ -3,109 +3,99 @@
 APlanet::APlanet()
 {
 	PrimaryActorTick.bCanEverTick = true;
-	Mesh = CreateDefaultSubobject<UProceduralMeshComponent>(TEXT("Mesh"));
-	Mesh->SetCanEverAffectNavigation(false);
-	RootComponent = Mesh;
-	Mesh->SetVisibility(true);
-	Mesh->SetHiddenInGame(false);
-	Mesh->bCastDynamicShadow = true;
-	Terrain = CreateDefaultSubobject<UTerrainComponent>("Terrain");
+	PlanetMesh = CreateDefaultSubobject<UProceduralMeshComponent>("PlanetMesh");
+	PlanetMesh->SetCanEverAffectNavigation(false);
+	RootComponent = PlanetMesh;
+	PlanetMesh->SetVisibility(true);
+	PlanetMesh->SetHiddenInGame(false);
+	PlanetMesh->bCastDynamicShadow = true;
 	Environment = CreateDefaultSubobject<UEnvironment>("Environment");
-
-	Resolution = 100;
+	
+	if (BuildTerrain)
+		Terrain = CreateDefaultSubobject<UTerrainComponent>("Terrain");
+	
+	PlanetResolution = 100;
 	Radius = 100;
 }
 
 void APlanet::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if (EditorGenerated)
+		return;
 	
 	DynamicTerrainMaterial = UMaterialInstanceDynamic::Create(BaseTerrainMaterial, this);
-	DynamicTerrainMaterial->SetVectorParameterValue(TEXT("Color"), Color);
-	
 	GeneratePlanet();
 }
 
 void APlanet::GeneratePlanet() const
 {
-	GenerateMeshes();
-	Terrain->RandomizeTerrain();
-	Environment->RandomizeBiomes();
-	ApplyEnvironment();
+	if (BuildTerrain)
+	{
+		const MeshGenerator Generator = MeshGenerator(PlanetMesh, Terrain, PlanetResolution, Radius);
+		Generator.GenerateTerrainMeshes();
+		Terrain->RandomizeTerrain();
+		Environment->RandomizeBiomes();
+		ApplyEnvironment();
+	}
+	else
+	{
+		const MeshGenerator Generator = MeshGenerator(PlanetMesh, PlanetResolution, Radius);
+		Generator.GenerateSimpleMeshes();
+
+		for (int i = 0; i < PlanetMesh->GetNumSections(); i++)
+		{
+			PlanetMesh->SetMaterial(i, DynamicTerrainMaterial);
+		}
+	}
+	
 }
 
 void APlanet::UpdatePlanet() const
 {
-	GenerateMeshes();
-	ApplyEnvironment();
-}
-
-void APlanet::GenerateMeshes() const
-{
-	Terrain->ResetElevation();
-	Mesh->ClearAllMeshSections();
-	for (int i = 0; i < 6; i++)
+	if (BuildTerrain)
 	{
-		GenerateMesh(i, Directions[i]);
+		const MeshGenerator Generator(PlanetMesh, Terrain, PlanetResolution, Radius);
+		Generator.GenerateTerrainMeshes();
+		ApplyEnvironment();
 	}
-}
-
-void APlanet::GenerateMesh(const int SectionIndex, const FVector& LocalUp) const
-{
-	const FVector AxisX  = FVector(LocalUp.Y, LocalUp.Z, LocalUp.X);
-	const FVector AxisY = FVector::CrossProduct(LocalUp, AxisX);
-	
-	TArray<FVector> Vertices;
-	TArray<int> Indices;
-	TArray<FVector> Normals;
-	TArray<FVector2D> UVs;
-	
-	for (int y = 0; y < Resolution; y++)
+	else
 	{
-		for (int x = 0; x < Resolution; x++)
+		const MeshGenerator Generator = MeshGenerator(PlanetMesh, PlanetResolution, Radius);
+		Generator.GenerateSimpleMeshes();
+
+		for (int i = 0; i < PlanetMesh->GetNumSections(); i++)
 		{
-			const FVector2d Percent = FVector2d(x, y) / (Resolution - 1);
-			FVector PointOnUnitCube = LocalUp + (Percent.X - 0.5f) * 2 * AxisX + (Percent.Y - 0.5f) * 2 * AxisY;
-			FVector PointOnUnitSphere = PointOnUnitCube.GetSafeNormal();
-			const float UnscaledElevation = Terrain->EvaluateUnscaledTerrain(PointOnUnitSphere);
-			const float ScaledElevation = Radius * (FMath::Max(0, UnscaledElevation) + 1);
-			Vertices.Add(PointOnUnitSphere * ScaledElevation);
-			Normals.Add(PointOnUnitSphere);
-			
-			UVs.Add(FVector2D(0, UnscaledElevation));
+			PlanetMesh->SetMaterial(i, DynamicTerrainMaterial);
 		}
 	}
+}
 
-	for (int y = 0; y < Resolution - 1; y++)
-	{
-		for (int x = 0; x < Resolution - 1; x++)
-		{
-			const int i = x + y * Resolution;
-			
-			Indices.Add(i);
-			Indices.Add(i + Resolution);
-			Indices.Add(i + Resolution + 1);
-			Indices.Add(i);
-			Indices.Add(i + Resolution + 1);
-			Indices.Add(i + 1);
-		}
-	}
-	
-	Mesh->CreateMeshSection(SectionIndex, Vertices, Indices, Normals, UVs, TArray<FColor>(), TArray<FProcMeshTangent>(), false);
-	Mesh->SetMaterial(SectionIndex, DynamicTerrainMaterial);
+void APlanet::GenerateInEditor()
+{
+	DynamicTerrainMaterial = UMaterialInstanceDynamic::Create(BaseTerrainMaterial, this);
+	GeneratePlanet();
+	EditorGenerated = true;
+}
+
+void APlanet::ConvertToStaticMesh()
+{
+	MeshGenerator::GenerateStaticMesh(PlanetMesh, TEXT("/Game/Mesh/PlanetStaticMesh"));
 }
 
 void APlanet::ApplyEnvironment() const
 {
+	Environment->WriteTextureOnDisk = WriteGradientTextureOnDisk;
 	DynamicTerrainMaterial->SetScalarParameterValue(TEXT("Min"), Terrain->GetLowestElevation());
 	DynamicTerrainMaterial->SetScalarParameterValue(TEXT("Max"), Terrain->GetHighestElevation());
 	
 	UTexture2D* Gradient = Environment->GenerateBiomesTexture();
 	DynamicTerrainMaterial->SetTextureParameterValue(TEXT("Gradient"), Gradient);
 	
-	for (int i = 0 ; i < Mesh->GetNumSections(); i++)
+	for (int i = 0 ; i < PlanetMesh->GetNumSections(); i++)
 	{
-		FProcMeshSection* Section = Mesh->GetProcMeshSection(i);
+		FProcMeshSection* Section = PlanetMesh->GetProcMeshSection(i);
 		TArray<FProcMeshVertex>& Vertices = Section->ProcVertexBuffer;
 		TArray<FVector2D> UVs;
 		TArray<FVector> Normals;
@@ -113,15 +103,15 @@ void APlanet::ApplyEnvironment() const
 	
 		for (const FProcMeshVertex& Vertex : Vertices)
 		{
-			FVector Normal = Vertex.Normal;
 			const FVector2D UV = Vertex.UV0;
-			float BiomePercent = Environment->FindBiomePercentageFromPoint(Normal);
+			const float BiomePercent = Environment->FindBiomePercentageFromPoint(Vertex.Position, Vertex.Normal);
 			UVs.Add(FVector2D(BiomePercent, UV.Y));
-			Normals.Add(Normal);
+			Normals.Add(Vertex.Normal);
 			Positions.Add(Vertex.Position);
 		}
 	
-		Mesh->UpdateMeshSection(i, Positions, Normals, UVs, TArray<FColor>(), TArray<FProcMeshTangent>());
+		PlanetMesh->UpdateMeshSection(i, Positions, Normals, UVs, TArray<FColor>(), TArray<FProcMeshTangent>());
+		PlanetMesh->SetMaterial(i, DynamicTerrainMaterial);
 	}
 }
 
@@ -130,3 +120,10 @@ void APlanet::UpdateRadius(float pRadius)
 	Radius = pRadius;
 	UpdatePlanet();
 }
+
+void APlanet::SetVisible(const bool Visible) const
+{
+	PlanetMesh->SetVisibility(Visible);
+	PlanetMesh->SetHiddenInGame(!Visible);
+}
+
