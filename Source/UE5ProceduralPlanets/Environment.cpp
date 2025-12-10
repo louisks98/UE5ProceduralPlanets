@@ -16,7 +16,7 @@ UTexture2D* UEnvironment::GenerateBiomesTexture()
 	const int32 Width = 128;
 	const int32 Height = Biomes.Num();
 	
-	UTexture2D* Texture = UTexture2D::CreateTransient(Width * 2, Height, PF_B8G8R8A8);
+	UTexture2D* Texture = UTexture2D::CreateTransient(Width * 3, Height, PF_B8G8R8A8);
 	if (!Texture) return nullptr;
 
 	Texture->CompressionSettings = TC_VectorDisplacementmap;
@@ -33,7 +33,7 @@ UTexture2D* UEnvironment::GenerateBiomesTexture()
 	for (int32 y = 0; y < Height; y++)
 	{
 		UBiome* Biome = Biomes[y];
-		for (int32 x = 0; x < Width * 2; x++)
+		for (int32 x = 0; x < Width * 3; x++)
 		{
 			float t;
 			FLinearColor GradientColor;
@@ -42,15 +42,20 @@ UTexture2D* UEnvironment::GenerateBiomesTexture()
 				t = static_cast<float>(x) / static_cast<float>(Width - 1);
 				GradientColor = Biome->EvaluateOceanColor(t);
 			}
-			else
+			else if (x >= Width && x < Width * 2)
 			{
 				t = static_cast<float>(x - Width) / static_cast<float>(Width - 1);
 				GradientColor = Biome->EvaluateLandColor(t);
 			}
+			else
+			{
+				t = static_cast<float>(x - Width * 2) / static_cast<float>(Width - 1);
+				GradientColor = Biome->EvaluateTopLandColor(t);
+			}
 
 			FColor ByteColor = GradientColor.ToFColor(false);
 
-			int32 PixelIndex = (y * Width * 2 + x) * 4;
+			int32 PixelIndex = (y * Width * 3 + x) * 4;
 			RawData[PixelIndex + 0] = ByteColor.B;
 			RawData[PixelIndex + 1] = ByteColor.G;
 			RawData[PixelIndex + 2] = ByteColor.R;
@@ -142,6 +147,7 @@ UBiome* UEnvironment::CreateBiome(const FRandomStream* Rand)
 	const BiomeType Type = BiomesTypes[BiomeTypeIndex];
 	GenerateBiomeColors(&Biome->LandColors, Type.LandColors, Rand);
 	GenerateBiomeColors(&Biome->OceanColors, Type.OceanColors, Rand);
+	GenerateBiomeColors(&Biome->TopLandColors, Type.TopLandColors, Rand);
 
 	return Biome;
 }

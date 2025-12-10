@@ -6,6 +6,11 @@ UBiome::UBiome()
 	StartHeight = 1.0f;
 }
 
+FLinearColor UBiome::EvaluateTopLandColor(float t) const
+{
+	return EvaluateColor(TopLandColors, t);
+}
+
 FLinearColor UBiome::EvaluateLandColor(const float t) const
 {
 	return EvaluateColor(LandColors, t);
